@@ -1,55 +1,43 @@
-import { Theme } from "@radix-ui/themes";
-import "@radix-ui/themes/styles.css";
-import "./index.css";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { ThemeProvider } from "@/theme/theme-provider";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { Provider } from "react-redux";
-import { store } from "./redux/store.ts";
-import RootBoundary from "./components/errors/RootBoundary";
+import { Provider } from 'react-redux';
+import { ThemeProvider } from '@/theme/theme-provider';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import store from './redux/store';
+import Layout from './layout';
+import TodoApp from './pages';
+import AuthPage from './pages/auth';
+import { useSelector } from 'react-redux';
+import { RootState } from './redux/store';
+import { ErrorBoundary } from './components/errors/ErrorBoundary';
 
-import { Layout } from "./layout";
-import Index from "./pages/index";
-import NotFound from "./pages/NotFound";
-import { useTheme } from "./theme/use-theme";
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const user = useSelector((state: RootState) => state.auth.user);
+  return user ? <>{children}</> : <Navigate to="/auth" />;
+}
 
-
-const App = () => {
-  const { theme } = useTheme();
-
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: (
-        <Layout showSidebar={false} showHeader={false} showFooter={false} />
-      ),
-      errorElement: <RootBoundary />,
-      children: [
-        {
-          index: true,
-          element: <Index />,
-        },
-        {
-          path: "*",
-          element: <NotFound />,
-        },
-      ],
-    },
-  ]);
-
+function App() {
   return (
-    <Provider store={store}>
-      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-        <Theme appearance={theme === "system" ? "light" : theme}>
-          <div className={theme}>
-            <SidebarProvider>
-              <RouterProvider router={router} />
-            </SidebarProvider>
-          </div>
-        </Theme>
-      </ThemeProvider>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <ThemeProvider>
+          <Router>
+            <Layout>
+              <Routes>
+                <Route path="/auth" element={<AuthPage />} />
+                <Route
+                  path="/"
+                  element={
+                    <PrivateRoute>
+                      <TodoApp />
+                    </PrivateRoute>
+                  }
+                />
+              </Routes>
+            </Layout>
+          </Router>
+        </ThemeProvider>
+      </Provider>
+    </ErrorBoundary>
   );
-};
+}
 
 export default App;

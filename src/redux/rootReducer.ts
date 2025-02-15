@@ -1,21 +1,11 @@
-import { combineReducers } from 'redux';
-import storage from 'redux-persist/lib/storage';
-
-import tablesReducer from './slices/tables.ts';
-
-
-// ----------------------------------------------------------------------
-
-export const rootPersistConfig = {
-  key: 'root',
-  storage,
-  keyPrefix: 'redux-',
-  whitelist: [],
-};
-
+import { combineReducers } from '@reduxjs/toolkit';
+import todosReducer from './slices/tables';
+import authReducer from './slices/auth';
 
 const rootReducer = combineReducers({
-  tables: tablesReducer,
+  todos: todosReducer,
+  auth: authReducer,
 });
 
+export type RootState = ReturnType<typeof rootReducer>;
 export default rootReducer;
